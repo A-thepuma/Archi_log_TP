@@ -15,4 +15,10 @@ class StarshipApiController extends AbstractController
         $starships = $repository->findAll();
         return $this->json($starships);
     }
+
+    #[Route('api/starships/{id<\d+>}')]
+    public function get($id) : Response
+    {
+        dd($id);
+    }
 }
