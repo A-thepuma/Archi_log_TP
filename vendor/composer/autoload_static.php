@@ -7,9 +7,9 @@ namespace Composer\Autoload;
 class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
 {
     public static $files = array (
-        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
-        '606a39d89246991a373564698c2d8383' => __DIR__ . '/..' . '/symfony/polyfill-php85/bootstrap.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '89efb1254ef2d1c5d80096acd12c4098' => __DIR__ . '/..' . '/twig/twig/src/Resources/core.php',
         'ffecb95d45175fd40f75be8a23b34f90' => __DIR__ . '/..' . '/twig/twig/src/Resources/debug.php',
@@ -37,14 +37,13 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'S' =>
         array (
             'Symfony\\Runtime\\Symfony\\Component\\' => 34,
-            'Symfony\\Polyfill\\Php85\\' => 23,
+            'Symfony\\Polyfill\\Php83\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
             'Symfony\\Polyfill\\Intl\\Grapheme\\' => 31,
             'Symfony\\Flex\\' => 13,
             'Symfony\\Contracts\\Translation\\' => 30,
             'Symfony\\Contracts\\Service\\' => 26,
-            'Symfony\\Contracts\\HttpClient\\' => 29,
             'Symfony\\Contracts\\EventDispatcher\\' => 34,
             'Symfony\\Contracts\\Cache\\' => 24,
             'Symfony\\Component\\Yaml\\' => 23,
@@ -60,7 +59,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
             'Symfony\\Component\\PropertyAccess\\' => 33,
             'Symfony\\Component\\HttpKernel\\' => 29,
             'Symfony\\Component\\HttpFoundation\\' => 33,
-            'Symfony\\Component\\HttpClient\\' => 29,
             'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\Filesystem\\' => 29,
             'Symfony\\Component\\EventDispatcher\\' => 34,
@@ -70,7 +68,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
             'Symfony\\Component\\Console\\' => 26,
             'Symfony\\Component\\Config\\' => 25,
             'Symfony\\Component\\Cache\\' => 24,
-            'Symfony\\Component\\AssetMapper\\' => 30,
             'Symfony\\Bundle\\WebProfilerBundle\\' => 33,
             'Symfony\\Bundle\\TwigBundle\\' => 26,
             'Symfony\\Bundle\\MonologBundle\\' => 29,
@@ -94,10 +91,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'D' =>
         array (
             'Doctrine\\Deprecations\\' => 22,
-        ),
-        'C' =>
-        array (
-            'Composer\\Semver\\' => 16,
         ),
         'A' =>
         array (
@@ -129,9 +122,9 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         array (
             0 => __DIR__ . '/..' . '/symfony/runtime/Internal',
         ),
-        'Symfony\\Polyfill\\Php85\\' =>
+        'Symfony\\Polyfill\\Php83\\' =>
         array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php85',
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
         ),
         'Symfony\\Polyfill\\Mbstring\\' =>
         array (
@@ -156,10 +149,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'Symfony\\Contracts\\Service\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/service-contracts',
-        ),
-        'Symfony\\Contracts\\HttpClient\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/symfony/http-client-contracts',
         ),
         'Symfony\\Contracts\\EventDispatcher\\' =>
         array (
@@ -221,10 +210,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         array (
             0 => __DIR__ . '/..' . '/symfony/http-foundation',
         ),
-        'Symfony\\Component\\HttpClient\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/symfony/http-client',
-        ),
         'Symfony\\Component\\Finder\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/finder',
@@ -261,10 +246,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         array (
             0 => __DIR__ . '/..' . '/symfony/cache',
         ),
-        'Symfony\\Component\\AssetMapper\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/symfony/asset-mapper',
-        ),
         'Symfony\\Bundle\\WebProfilerBundle\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/web-profiler-bundle',
@@ -275,7 +256,7 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         ),
         'Symfony\\Bundle\\MonologBundle\\' =>
         array (
-            0 => __DIR__ . '/..' . '/symfony/monolog-bundle/src',
+            0 => __DIR__ . '/..' . '/symfony/monolog-bundle',
         ),
         'Symfony\\Bundle\\FrameworkBundle\\' =>
         array (
@@ -321,10 +302,6 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         array (
             0 => __DIR__ . '/..' . '/doctrine/deprecations/src',
         ),
-        'Composer\\Semver\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/composer/semver/src',
-        ),
         'App\\Tests\\' =>
         array (
             0 => __DIR__ . '/../..' . '/tests',
@@ -337,8 +314,18 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'NoDiscard' => __DIR__ . '/..' . '/symfony/polyfill-php85/Resources/stubs/NoDiscard.php',
+        'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
+        'DateException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateException.php',
+        'DateInvalidOperationException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateInvalidOperationException.php',
+        'DateInvalidTimeZoneException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateInvalidTimeZoneException.php',
+        'DateMalformedIntervalStringException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateMalformedIntervalStringException.php',
+        'DateMalformedPeriodStringException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateMalformedPeriodStringException.php',
+        'DateMalformedStringException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateMalformedStringException.php',
+        'DateObjectError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateObjectError.php',
+        'DateRangeError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateRangeError.php',
         'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
+        'Override' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/Override.php',
+        'SQLite3Exception' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/SQLite3Exception.php',
         '©' => __DIR__ . '/..' . '/symfony/cache/Traits/ValueWrapper.php',
     );
 

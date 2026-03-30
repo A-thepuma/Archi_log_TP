@@ -36,15 +36,14 @@ use Symfony\Bundle\FrameworkBundle\Command\SecretsRemoveCommand;
 use Symfony\Bundle\FrameworkBundle\Command\SecretsRevealCommand;
 use Symfony\Bundle\FrameworkBundle\Command\SecretsSetCommand;
 use Symfony\Bundle\FrameworkBundle\Command\TranslationDebugCommand;
-use Symfony\Bundle\FrameworkBundle\Command\TranslationExtractCommand;
+use Symfony\Bundle\FrameworkBundle\Command\TranslationUpdateCommand;
+use Symfony\Bundle\FrameworkBundle\Command\WorkflowDumpCommand;
 use Symfony\Bundle\FrameworkBundle\Command\YamlLintCommand;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\EventListener\SuggestMissingPackageSubscriber;
 use Symfony\Component\Console\EventListener\ErrorListener;
 use Symfony\Component\Console\Messenger\RunCommandMessageHandler;
 use Symfony\Component\Dotenv\Command\DebugCommand as DotenvDebugCommand;
-use Symfony\Component\ErrorHandler\Command\ErrorDumpCommand;
-use Symfony\Component\Form\Command\DebugCommand;
 use Symfony\Component\Messenger\Command\ConsumeMessagesCommand;
 use Symfony\Component\Messenger\Command\DebugCommand as MessengerDebugCommand;
 use Symfony\Component\Messenger\Command\FailedMessagesRemoveCommand;
@@ -60,8 +59,6 @@ use Symfony\Component\Translation\Command\TranslationPullCommand;
 use Symfony\Component\Translation\Command\TranslationPushCommand;
 use Symfony\Component\Translation\Command\XliffLintCommand;
 use Symfony\Component\Validator\Command\DebugCommand as ValidatorDebugCommand;
-use Symfony\Component\Workflow\Command\WorkflowDumpCommand;
-use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupInterface;
 
 return static function (ContainerConfigurator $container) {
     $container->services()
@@ -129,9 +126,6 @@ return static function (ContainerConfigurator $container) {
             ->tag('console.command')
 
         ->set('console.command.config_debug', ConfigDebugCommand::class)
-            ->args([
-                service('container.env_var_processors_locator'),
-            ])
             ->tag('console.command')
 
         ->set('console.command.config_dump_reference', ConfigDumpReferenceCommand::class)
@@ -204,7 +198,7 @@ return static function (ContainerConfigurator $container) {
                 service('messenger.routable_message_bus'),
                 service('event_dispatcher'),
                 service('logger')->nullOnInvalid(),
-                service('.messenger.transport.native_php_serializer')->nullOnInvalid(),
+                service('messenger.transport.native_php_serializer')->nullOnInvalid(),
                 null,
             ])
             ->tag('console.command')
@@ -214,7 +208,7 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 abstract_arg('Default failure receiver name'),
                 abstract_arg('Receivers'),
-                service('.messenger.transport.native_php_serializer')->nullOnInvalid(),
+                service('messenger.transport.native_php_serializer')->nullOnInvalid(),
             ])
             ->tag('console.command')
 
@@ -222,7 +216,7 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 abstract_arg('Default failure receiver name'),
                 abstract_arg('Receivers'),
-                service('.messenger.transport.native_php_serializer')->nullOnInvalid(),
+                service('messenger.transport.native_php_serializer')->nullOnInvalid(),
             ])
             ->tag('console.command')
 
@@ -272,7 +266,7 @@ return static function (ContainerConfigurator $container) {
             ])
             ->tag('console.command')
 
-        ->set('console.command.translation_extract', TranslationExtractCommand::class)
+        ->set('console.command.translation_extract', TranslationUpdateCommand::class)
             ->args([
                 service('translation.writer'),
                 service('translation.reader'),
@@ -331,7 +325,7 @@ return static function (ContainerConfigurator $container) {
             ])
             ->tag('console.command')
 
-        ->set('console.command.form_debug', DebugCommand::class)
+        ->set('console.command.form_debug', \Symfony\Component\Form\Command\DebugCommand::class)
             ->args([
                 service('form.registry'),
                 [], // All form types namespaces are stored here by FormPass
@@ -391,14 +385,6 @@ return static function (ContainerConfigurator $container) {
             ])
             ->tag('console.command')
 
-        ->set('console.command.error_dumper', ErrorDumpCommand::class)
-            ->args([
-                service('filesystem'),
-                service('error_renderer.html'),
-                service(EntrypointLookupInterface::class)->nullOnInvalid(),
-            ])
-            ->tag('console.command')
-
         ->set('console.messenger.application', Application::class)
             ->share(false)
             ->call('setAutoExit', [false])
@@ -410,6 +396,6 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 service('console.messenger.application'),
             ])
-            ->tag('messenger.message_handler', ['sign' => true])
+            ->tag('messenger.message_handler')
     ;
 };

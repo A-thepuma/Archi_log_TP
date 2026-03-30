@@ -39,14 +39,14 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * Full configuration from {@link https://commonmark.thephpleague.com/2.7/configuration}.
+     * Full configuration from {@link https://commonmark.thephpleague.com/2.3/configuration}.
      */
     private function addCommonMarkConfiguration(ArrayNodeDefinition $rootNode): void
     {
         $rootNode
             ->children()
                 ->arrayNode('commonmark')
-                    ->ignoreExtraKeys(false)
+                    ->ignoreExtraKeys()
                     ->children()
                         ->arrayNode('renderer')
                             ->info('Array of options for rendering HTML.')
@@ -58,7 +58,7 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->enumNode('html_input')
                             ->info('How to handle HTML input.')
-                            ->values(['strip', 'allow', 'escape'])
+                            ->values(['strip','allow','escape'])
                             ->end()
                         ->booleanNode('allow_unsafe_links')
                             ->info('Remove risky link and image URLs by setting this to false.')
@@ -66,11 +66,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->integerNode('max_nesting_level')
                             ->info('The maximum nesting level for blocks.')
-                            ->defaultValue(\PHP_INT_MAX)
-                            ->end()
-                        ->integerNode('max_delimiters_per_line')
-                            ->info('The maximum number of strong/emphasis delimiters per line.')
-                            ->defaultValue(\PHP_INT_MAX)
+                            ->defaultValue(PHP_INT_MAX)
                             ->end()
                         ->arrayNode('slug_normalizer')
                             ->info('Array of options for configuring how URL-safe slugs are created.')

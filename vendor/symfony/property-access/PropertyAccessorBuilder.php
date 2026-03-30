@@ -128,7 +128,7 @@ class PropertyAccessorBuilder
      */
     public function isMagicCallEnabled(): bool
     {
-        return $this->magicMethods & PropertyAccessor::MAGIC_CALL;
+        return (bool) ($this->magicMethods & PropertyAccessor::MAGIC_CALL);
     }
 
     /**

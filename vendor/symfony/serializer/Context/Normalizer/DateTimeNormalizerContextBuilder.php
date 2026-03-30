@@ -43,14 +43,12 @@ final class DateTimeNormalizerContextBuilder implements ContextBuilderInterface
      *
      * @see https://secure.php.net/manual/en/class.datetimezone.php
      *
-     * @param ?bool $force Whether to enforce the timezone during denormalization
-     *
      * @throws InvalidArgumentException
      */
-    public function withTimezone(\DateTimeZone|string|null $timezone, ?bool $force = null): static
+    public function withTimezone(\DateTimeZone|string|null $timezone): static
     {
         if (null === $timezone) {
-            return $this->with(DateTimeNormalizer::TIMEZONE_KEY, null)->with(DateTimeNormalizer::FORCE_TIMEZONE_KEY, $force);
+            return $this->with(DateTimeNormalizer::TIMEZONE_KEY, null);
         }
 
         if (\is_string($timezone)) {
@@ -61,7 +59,7 @@ final class DateTimeNormalizerContextBuilder implements ContextBuilderInterface
             }
         }
 
-        return $this->with(DateTimeNormalizer::TIMEZONE_KEY, $timezone)->with(DateTimeNormalizer::FORCE_TIMEZONE_KEY, $force);
+        return $this->with(DateTimeNormalizer::TIMEZONE_KEY, $timezone);
     }
 
     /**

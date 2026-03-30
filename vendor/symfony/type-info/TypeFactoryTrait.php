@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\TypeInfo;
 
-use Symfony\Component\TypeInfo\Type\ArrayShapeType;
 use Symfony\Component\TypeInfo\Type\BackedEnumType;
 use Symfony\Component\TypeInfo\Type\BuiltinType;
 use Symfony\Component\TypeInfo\Type\CollectionType;
@@ -153,7 +152,7 @@ trait TypeFactoryTrait
     public static function collection(BuiltinType|ObjectType|GenericType $type, ?Type $value = null, ?Type $key = null, bool $asList = false): CollectionType
     {
         if (!$type instanceof GenericType && (null !== $value || null !== $key)) {
-            $type = self::generic($type, $key ?? self::arrayKey(), $value ?? self::mixed());
+            $type = self::generic($type, $key ?? self::union(self::int(), self::string()), $value ?? self::mixed());
         }
 
         return new CollectionType($type, $asList);
@@ -170,9 +169,9 @@ trait TypeFactoryTrait
     /**
      * @return CollectionType<BuiltinType<TypeIdentifier::ITERABLE>>
      */
-    public static function iterable(?Type $value = null, ?Type $key = null): CollectionType
+    public static function iterable(?Type $value = null, ?Type $key = null, bool $asList = false): CollectionType
     {
-        return self::collection(self::builtin(TypeIdentifier::ITERABLE), $value, $key);
+        return self::collection(self::builtin(TypeIdentifier::ITERABLE), $value, $key, $asList);
     }
 
     /**
@@ -189,32 +188,6 @@ trait TypeFactoryTrait
     public static function dict(?Type $value = null): CollectionType
     {
         return self::array($value, self::string());
-    }
-
-    /**
-     * @param array<array{type: Type, optional?: bool}|Type> $shape
-     */
-    public static function arrayShape(array $shape, bool $sealed = true, ?Type $extraKeyType = null, ?Type $extraValueType = null): ArrayShapeType
-    {
-        $shape = array_map(static function (array|Type $item): array {
-            return $item instanceof Type
-                ? ['type' => $item, 'optional' => false]
-                : ['type' => $item['type'], 'optional' => $item['optional'] ?? false];
-        }, $shape);
-
-        if ($extraKeyType || $extraValueType) {
-            $sealed = false;
-        }
-
-        $extraKeyType ??= !$sealed ? Type::arrayKey() : null;
-        $extraValueType ??= !$sealed ? Type::mixed() : null;
-
-        return new ArrayShapeType($shape, $extraKeyType, $extraValueType);
-    }
-
-    public static function arrayKey(): UnionType
-    {
-        return self::union(self::int(), self::string());
     }
 
     /**
@@ -236,7 +209,7 @@ trait TypeFactoryTrait
      * @param T      $className
      * @param U|null $backingType
      *
-     * @return ($className is class-string<\BackedEnum> ? ($backingType is U ? BackedEnumType<T, U> : BackedEnumType<T, BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>>) : EnumType<T>))
+     * @return ($className is class-string<\BackedEnum> ? ($backingType is U ? BackedEnumType<T,U> : BackedEnumType<T,BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>>) : EnumType<T>))
      */
     public static function enum(string $className, ?BuiltinType $backingType = null): EnumType
     {
@@ -295,12 +268,14 @@ trait TypeFactoryTrait
         foreach ($types as $type) {
             if ($type instanceof NullableType) {
                 $nullableUnion = true;
-                $type = $type->getWrappedType();
+                $unionTypes[] = $type->getWrappedType();
+
+                continue;
             }
 
             if ($type instanceof UnionType) {
                 foreach ($type->getTypes() as $unionType) {
-                    if ($isNullable($unionType)) {
+                    if ($isNullable($type)) {
                         $nullableUnion = true;
 
                         continue;
@@ -371,79 +346,5 @@ trait TypeFactoryTrait
         }
 
         return new NullableType($type);
-    }
-
-    public static function fromValue(mixed $value): Type
-    {
-        $type = match ($value) {
-            null => self::null(),
-            true => self::true(),
-            false => self::false(),
-            default => null,
-        };
-
-        if (null !== $type) {
-            return $type;
-        }
-
-        if (\is_callable($value)) {
-            return Type::callable();
-        }
-
-        if (\is_resource($value)) {
-            return Type::resource();
-        }
-
-        $type = match (get_debug_type($value)) {
-            TypeIdentifier::INT->value => self::int(),
-            TypeIdentifier::FLOAT->value => self::float(),
-            TypeIdentifier::STRING->value => self::string(),
-            default => null,
-        };
-
-        if (null !== $type) {
-            return $type;
-        }
-
-        $type = match (true) {
-            $value instanceof \UnitEnum => Type::enum($value::class),
-            \is_object($value) => \stdClass::class === $value::class ? self::object() : self::object($value::class),
-            \is_array($value) => self::builtin(TypeIdentifier::ARRAY),
-            default => null,
-        };
-
-        if (null === $type) {
-            return Type::mixed();
-        }
-
-        if (is_iterable($value)) {
-            /** @var list<BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>> $keyTypes */
-            $keyTypes = [];
-
-            /** @var list<Type> $valueTypes */
-            $valueTypes = [];
-
-            foreach ($value as $k => $v) {
-                $keyTypes[] = self::fromValue($k);
-                $valueTypes[] = self::fromValue($v);
-            }
-
-            if ($keyTypes) {
-                $keyTypes = array_values(array_unique($keyTypes));
-                $keyType = \count($keyTypes) > 1 ? self::union(...$keyTypes) : $keyTypes[0];
-            } else {
-                $keyType = Type::arrayKey();
-            }
-
-            $valueType = $valueTypes ? CollectionType::mergeCollectionValueTypes($valueTypes) : Type::mixed();
-
-            return self::collection($type, $valueType, $keyType, \is_array($value) && [] !== $value && array_is_list($value));
-        }
-
-        if ($value instanceof \ArrayAccess) {
-            return self::collection($type);
-        }
-
-        return $type;
     }
 }

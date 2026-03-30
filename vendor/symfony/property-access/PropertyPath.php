@@ -72,6 +72,7 @@ class PropertyPath implements \IteratorAggregate, PropertyPathInterface
     {
         // Can be used as copy constructor
         if ($propertyPath instanceof self) {
+            /* @var PropertyPath $propertyPath */
             $this->elements = $propertyPath->elements;
             $this->length = $propertyPath->length;
             $this->isIndex = $propertyPath->isIndex;

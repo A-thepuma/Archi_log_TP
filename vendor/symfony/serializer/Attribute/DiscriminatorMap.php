@@ -22,14 +22,12 @@ class DiscriminatorMap
     /**
      * @param string                      $typeProperty The property holding the type discriminator
      * @param array<string, class-string> $mapping      The mapping between types and classes (i.e. ['admin_user' => AdminUser::class])
-     * @param ?string                     $defaultType  The fallback value if nothing specified by $typeProperty
      *
      * @throws InvalidArgumentException
      */
     public function __construct(
-        public readonly string $typeProperty,
-        public readonly array $mapping,
-        public readonly ?string $defaultType = null,
+        private readonly string $typeProperty,
+        private readonly array $mapping,
     ) {
         if (!$typeProperty) {
             throw new InvalidArgumentException(\sprintf('Parameter "typeProperty" given to "%s" cannot be empty.', static::class));
@@ -38,9 +36,19 @@ class DiscriminatorMap
         if (!$mapping) {
             throw new InvalidArgumentException(\sprintf('Parameter "mapping" given to "%s" cannot be empty.', static::class));
         }
-
-        if (null !== $this->defaultType && !\array_key_exists($this->defaultType, $this->mapping)) {
-            throw new InvalidArgumentException(\sprintf('Default type "%s" given to "%s" must be present in "mapping" types.', $this->defaultType, static::class));
-        }
     }
+
+    public function getTypeProperty(): string
+    {
+        return $this->typeProperty;
+    }
+
+    public function getMapping(): array
+    {
+        return $this->mapping;
+    }
+}
+
+if (!class_exists(\Symfony\Component\Serializer\Annotation\DiscriminatorMap::class, false)) {
+    class_alias(DiscriminatorMap::class, \Symfony\Component\Serializer\Annotation\DiscriminatorMap::class);
 }

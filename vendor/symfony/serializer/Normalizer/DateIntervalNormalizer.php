@@ -43,13 +43,13 @@ final class DateIntervalNormalizer implements NormalizerInterface, DenormalizerI
     /**
      * @throws InvalidArgumentException
      */
-    public function normalize(mixed $data, ?string $format = null, array $context = []): string
+    public function normalize(mixed $object, ?string $format = null, array $context = []): string
     {
-        if (!$data instanceof \DateInterval) {
+        if (!$object instanceof \DateInterval) {
             throw new InvalidArgumentException('The object must be an instance of "\DateInterval".');
         }
 
-        return $data->format($context[self::FORMAT_KEY] ?? $this->defaultContext[self::FORMAT_KEY]);
+        return $object->format($context[self::FORMAT_KEY] ?? $this->defaultContext[self::FORMAT_KEY]);
     }
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool

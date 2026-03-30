@@ -33,8 +33,6 @@ use Symfony\Component\Serializer\Mapping\ClassMetadataInterface;
  */
 class AttributeLoader implements LoaderInterface
 {
-    use AccessorCollisionResolverTrait;
-
     private const KNOWN_ATTRIBUTES = [
         DiscriminatorMap::class,
         Groups::class,
@@ -45,40 +43,13 @@ class AttributeLoader implements LoaderInterface
         Context::class,
     ];
 
-    /**
-     * @param array<class-string, class-string[]> $mappedClasses
-     */
-    public function __construct(
-        private bool $allowAnyClass = true,
-        private array $mappedClasses = [],
-    ) {
-    }
-
-    /**
-     * @return class-string[]
-     */
-    public function getMappedClasses(): array
+    public function __construct()
     {
-        return array_keys($this->mappedClasses);
     }
 
     public function loadClassMetadata(ClassMetadataInterface $classMetadata): bool
     {
-        if (!$sourceClasses = $this->mappedClasses[$classMetadata->getName()] ??= $this->allowAnyClass ? [$classMetadata->getName()] : []) {
-            return false;
-        }
-
-        $success = false;
-        foreach ($sourceClasses as $sourceClass) {
-            $reflectionClass = $classMetadata->getName() === $sourceClass ? $classMetadata->getReflectionClass() : new \ReflectionClass($sourceClass);
-            $success = $this->doLoadClassMetadata($reflectionClass, $classMetadata) || $success;
-        }
-
-        return $success;
-    }
-
-    private function doLoadClassMetadata(\ReflectionClass $reflectionClass, ClassMetadataInterface $classMetadata): bool
-    {
+        $reflectionClass = $classMetadata->getReflectionClass();
         $className = $reflectionClass->name;
         $loaded = false;
         $classGroups = [];
@@ -88,8 +59,8 @@ class AttributeLoader implements LoaderInterface
 
         foreach ($this->loadAttributes($reflectionClass) as $attribute) {
             match (true) {
-                $attribute instanceof DiscriminatorMap => $classMetadata->setClassDiscriminatorMapping(new ClassDiscriminatorMapping($attribute->typeProperty, $attribute->mapping, $attribute->defaultType)),
-                $attribute instanceof Groups => $classGroups = $attribute->groups,
+                $attribute instanceof DiscriminatorMap => $classMetadata->setClassDiscriminatorMapping(new ClassDiscriminatorMapping($attribute->getTypeProperty(), $attribute->getMapping())),
+                $attribute instanceof Groups => $classGroups = $attribute->getGroups(),
                 $attribute instanceof Context => $classContextAttribute = $attribute,
                 default => null,
             };
@@ -115,7 +86,7 @@ class AttributeLoader implements LoaderInterface
                     $loaded = true;
 
                     if ($attribute instanceof Groups) {
-                        foreach ($attribute->groups as $group) {
+                        foreach ($attribute->getGroups() as $group) {
                             $attributeMetadata->addGroup($group);
                         }
 
@@ -123,9 +94,9 @@ class AttributeLoader implements LoaderInterface
                     }
 
                     match (true) {
-                        $attribute instanceof MaxDepth => $attributeMetadata->setMaxDepth($attribute->maxDepth),
-                        $attribute instanceof SerializedName => $attributeMetadata->setSerializedName($attribute->serializedName),
-                        $attribute instanceof SerializedPath => $attributeMetadata->setSerializedPath($attribute->serializedPath),
+                        $attribute instanceof MaxDepth => $attributeMetadata->setMaxDepth($attribute->getMaxDepth()),
+                        $attribute instanceof SerializedName => $attributeMetadata->setSerializedName($attribute->getSerializedName()),
+                        $attribute instanceof SerializedPath => $attributeMetadata->setSerializedPath($attribute->getSerializedPath()),
                         $attribute instanceof Ignore => $attributeMetadata->setIgnore(true),
                         $attribute instanceof Context => $this->setAttributeContextsForGroups($attribute, $attributeMetadata),
                         default => null,
@@ -138,21 +109,14 @@ class AttributeLoader implements LoaderInterface
             if ($method->getDeclaringClass()->name !== $className) {
                 continue;
             }
-            $name = $method->name;
 
-            if (0 === stripos($name, 'get') && $method->getNumberOfRequiredParameters()) {
+            if (0 === stripos($method->name, 'get') && $method->getNumberOfRequiredParameters()) {
                 continue; /*  matches the BC behavior in `Symfony\Component\Serializer\Normalizer\ObjectNormalizer::extractAttributes` */
             }
 
-            $attributeName = $this->getAttributeNameFromAccessor($reflectionClass, $method, true);
-            $accessorOrMutator = null !== $attributeName;
-            $hasProperty = $this->hasPropertyForAccessor($method->getDeclaringClass(), $name);
-            $attributeMetadata = null;
-
-            if ($hasProperty || $accessorOrMutator) {
-                if (null === $attributeName || 's' !== $name[0] && $hasProperty && $this->hasAttributeNameCollision($reflectionClass, $attributeName, $name)) {
-                    $attributeName = $name;
-                }
+            $accessorOrMutator = preg_match('/^(get|is|has|set)(.+)$/i', $method->name, $matches);
+            if ($accessorOrMutator && !ctype_lower($matches[2][0])) {
+                $attributeName = lcfirst($matches[2]);
 
                 if (isset($attributesMetadata[$attributeName])) {
                     $attributeMetadata = $attributesMetadata[$attributeName];
@@ -164,38 +128,38 @@ class AttributeLoader implements LoaderInterface
 
             foreach ($this->loadAttributes($method) as $attribute) {
                 if ($attribute instanceof Groups) {
-                    if (!$attributeMetadata) {
-                        throw new MappingException(\sprintf('Groups on "%s::%s()" cannot be added. Groups can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
+                    if (!$accessorOrMutator) {
+                        throw new MappingException(\sprintf('Groups on "%s::%s()" cannot be added. Groups can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    foreach ($attribute->groups as $group) {
+                    foreach ($attribute->getGroups() as $group) {
                         $attributeMetadata->addGroup($group);
                     }
                 } elseif ($attribute instanceof MaxDepth) {
-                    if (!$attributeMetadata) {
-                        throw new MappingException(\sprintf('MaxDepth on "%s::%s()" cannot be added. MaxDepth can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
+                    if (!$accessorOrMutator) {
+                        throw new MappingException(\sprintf('MaxDepth on "%s::%s()" cannot be added. MaxDepth can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $attributeMetadata->setMaxDepth($attribute->maxDepth);
+                    $attributeMetadata->setMaxDepth($attribute->getMaxDepth());
                 } elseif ($attribute instanceof SerializedName) {
-                    if (!$attributeMetadata) {
-                        throw new MappingException(\sprintf('SerializedName on "%s::%s()" cannot be added. SerializedName can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
+                    if (!$accessorOrMutator) {
+                        throw new MappingException(\sprintf('SerializedName on "%s::%s()" cannot be added. SerializedName can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $attributeMetadata->setSerializedName($attribute->serializedName);
+                    $attributeMetadata->setSerializedName($attribute->getSerializedName());
                 } elseif ($attribute instanceof SerializedPath) {
-                    if (!$attributeMetadata) {
-                        throw new MappingException(\sprintf('SerializedPath on "%s::%s()" cannot be added. SerializedPath can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
+                    if (!$accessorOrMutator) {
+                        throw new MappingException(\sprintf('SerializedPath on "%s::%s()" cannot be added. SerializedPath can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $attributeMetadata->setSerializedPath($attribute->serializedPath);
+                    $attributeMetadata->setSerializedPath($attribute->getSerializedPath());
                 } elseif ($attribute instanceof Ignore) {
-                    if ($attributeMetadata) {
+                    if ($accessorOrMutator) {
                         $attributeMetadata->setIgnore(true);
                     }
                 } elseif ($attribute instanceof Context) {
-                    if (!$attributeMetadata) {
-                        throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
+                    if (!$accessorOrMutator) {
+                        throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
                     $this->setAttributeContextsForGroups($attribute, $attributeMetadata);
@@ -233,10 +197,10 @@ class AttributeLoader implements LoaderInterface
 
     private function setAttributeContextsForGroups(Context $attribute, AttributeMetadataInterface $attributeMetadata): void
     {
-        $context = $attribute->context;
-        $groups = $attribute->groups;
-        $normalizationContext = $attribute->normalizationContext;
-        $denormalizationContext = $attribute->denormalizationContext;
+        $context = $attribute->getContext();
+        $groups = $attribute->getGroups();
+        $normalizationContext = $attribute->getNormalizationContext();
+        $denormalizationContext = $attribute->getDenormalizationContext();
 
         if ($normalizationContext || $context) {
             $attributeMetadata->setNormalizationContextForGroups($normalizationContext ?: $context, $groups);

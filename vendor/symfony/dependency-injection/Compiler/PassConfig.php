@@ -99,8 +99,7 @@ class PassConfig
                 new AliasDeprecatedPublicServicesPass(),
             ],
             // Let build parameters be available as late as possible
-            // Don't remove array parameters since ResolveParameterPlaceHoldersPass doesn't resolve them
-            -2048 => [new RemoveBuildParametersPass(true)],
+            -2048 => [new RemoveBuildParametersPass()],
         ];
     }
 

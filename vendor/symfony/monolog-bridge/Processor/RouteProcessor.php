@@ -12,7 +12,6 @@
 namespace Symfony\Bridge\Monolog\Processor;
 
 use Monolog\LogRecord;
-use Monolog\ResettableInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\FinishRequestEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -26,7 +25,7 @@ use Symfony\Contracts\Service\ResetInterface;
  *
  * @final
  */
-class RouteProcessor implements EventSubscriberInterface, ResetInterface, ResettableInterface
+class RouteProcessor implements EventSubscriberInterface, ResetInterface
 {
     private array $routeData = [];
 

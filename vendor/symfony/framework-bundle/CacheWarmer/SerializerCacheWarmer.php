@@ -14,18 +14,19 @@ namespace Symfony\Bundle\FrameworkBundle\CacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Serializer\Mapping\Factory\CacheClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
-use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Mapping\Loader\LoaderChain;
 use Symfony\Component\Serializer\Mapping\Loader\LoaderInterface;
 use Symfony\Component\Serializer\Mapping\Loader\XmlFileLoader;
 use Symfony\Component\Serializer\Mapping\Loader\YamlFileLoader;
 
 /**
- * Warms up serializer metadata.
+ * Warms up XML and YAML serializer metadata.
  *
  * @author Titouan Galopin <galopintitouan@gmail.com>
+ *
+ * @final since Symfony 7.1
  */
-final class SerializerCacheWarmer extends AbstractPhpFileCacheWarmer
+class SerializerCacheWarmer extends AbstractPhpFileCacheWarmer
 {
     /**
      * @param LoaderInterface[] $loaders      The serializer metadata loaders
@@ -40,9 +41,6 @@ final class SerializerCacheWarmer extends AbstractPhpFileCacheWarmer
 
     protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter, ?string $buildDir = null): bool
     {
-        if (!$buildDir) {
-            return false;
-        }
         if (!$this->loaders) {
             return true;
         }
@@ -65,14 +63,14 @@ final class SerializerCacheWarmer extends AbstractPhpFileCacheWarmer
     /**
      * @param LoaderInterface[] $loaders
      *
-     * @return list<XmlFileLoader|YamlFileLoader|AttributeLoader>
+     * @return XmlFileLoader[]|YamlFileLoader[]
      */
     private function extractSupportedLoaders(array $loaders): array
     {
         $supportedLoaders = [];
 
         foreach ($loaders as $loader) {
-            if (method_exists($loader, 'getMappedClasses')) {
+            if ($loader instanceof XmlFileLoader || $loader instanceof YamlFileLoader) {
                 $supportedLoaders[] = $loader;
             } elseif ($loader instanceof LoaderChain) {
                 $supportedLoaders = array_merge($supportedLoaders, $this->extractSupportedLoaders($loader->getLoaders()));

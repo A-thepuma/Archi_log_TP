@@ -456,19 +456,6 @@ class Definition
     }
 
     /**
-     * Adds a "resource" tag to the definition and marks it as excluded.
-     *
-     * These definitions should be processed using {@see ContainerBuilder::findTaggedResourceIds()}
-     *
-     * @return $this
-     */
-    public function addResourceTag(string $name, array $attributes = []): static
-    {
-        return $this->addTag($name, $attributes)
-            ->addTag('container.excluded', ['source' => \sprintf('by tag "%s"', $name)]);
-    }
-
-    /**
      * Whether this definition has a tag with the given name.
      */
     public function hasTag(string $name): bool
@@ -818,21 +805,5 @@ class Definition
     public function hasErrors(): bool
     {
         return (bool) $this->errors;
-    }
-
-    public function __serialize(): array
-    {
-        $data = [];
-        foreach ((array) $this as $k => $v) {
-            if (false !== $i = strrpos($k, "\0")) {
-                $k = substr($k, 1 + $i);
-            }
-            if (!$v xor 'shared' === $k) {
-                continue;
-            }
-            $data[$k] = $v;
-        }
-
-        return $data;
     }
 }

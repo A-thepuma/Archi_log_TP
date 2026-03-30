@@ -26,9 +26,7 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('debug');
 
         $rootNode = $treeBuilder->getRootNode();
-        $rootNode
-            ->docUrl('https://symfony.com/doc/{version:major}.{version:minor}/reference/configuration/debug.html', 'symfony/debug-bundle')
-            ->children()
+        $rootNode->children()
                 ->integerNode('max_items')
                     ->info('Max number of displayed items past the first level, -1 means no limit.')
                     ->min(-1)

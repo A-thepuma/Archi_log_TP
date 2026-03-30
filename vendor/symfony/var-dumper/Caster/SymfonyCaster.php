@@ -12,7 +12,6 @@
 namespace Symfony\Component\VarDumper\Caster;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Uid\TimeBasedUidInterface;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\VarDumper\Cloner\Stub;
@@ -20,8 +19,6 @@ use Symfony\Component\VarExporter\Internal\LazyObjectState;
 
 /**
  * @final
- *
- * @internal
  */
 class SymfonyCaster
 {
@@ -52,7 +49,7 @@ class SymfonyCaster
     public static function castHttpClient($client, array $a, Stub $stub, bool $isNested): array
     {
         $multiKey = \sprintf("\0%s\0multi", $client::class);
-        if (isset($a[$multiKey]) && !$a[$multiKey] instanceof Stub) {
+        if (isset($a[$multiKey])) {
             $a[$multiKey] = new CutStub($a[$multiKey]);
         }
 
@@ -81,14 +78,12 @@ class SymfonyCaster
 
         $instance = $a['realInstance'] ?? null;
 
-        if (isset($a['status'])) { // forward-compat with Symfony 8
-            $a = ['status' => new ConstStub(match ($a['status']) {
-                LazyObjectState::STATUS_INITIALIZED_FULL => 'INITIALIZED_FULL',
-                LazyObjectState::STATUS_INITIALIZED_PARTIAL => 'INITIALIZED_PARTIAL',
-                LazyObjectState::STATUS_UNINITIALIZED_FULL => 'UNINITIALIZED_FULL',
-                LazyObjectState::STATUS_UNINITIALIZED_PARTIAL => 'UNINITIALIZED_PARTIAL',
-            }, $a['status'])];
-        }
+        $a = ['status' => new ConstStub(match ($a['status']) {
+            LazyObjectState::STATUS_INITIALIZED_FULL => 'INITIALIZED_FULL',
+            LazyObjectState::STATUS_INITIALIZED_PARTIAL => 'INITIALIZED_PARTIAL',
+            LazyObjectState::STATUS_UNINITIALIZED_FULL => 'UNINITIALIZED_FULL',
+            LazyObjectState::STATUS_UNINITIALIZED_PARTIAL => 'UNINITIALIZED_PARTIAL',
+        }, $a['status'])];
 
         if ($instance) {
             $a['realInstance'] = $instance;
@@ -103,7 +98,8 @@ class SymfonyCaster
         $a[Caster::PREFIX_VIRTUAL.'toBase58'] = $uuid->toBase58();
         $a[Caster::PREFIX_VIRTUAL.'toBase32'] = $uuid->toBase32();
 
-        if ($uuid instanceof TimeBasedUidInterface) {
+        // symfony/uid >= 5.3
+        if (method_exists($uuid, 'getDateTime')) {
             $a[Caster::PREFIX_VIRTUAL.'time'] = $uuid->getDateTime()->format('Y-m-d H:i:s.u \U\T\C');
         }
 
@@ -115,7 +111,8 @@ class SymfonyCaster
         $a[Caster::PREFIX_VIRTUAL.'toBase58'] = $ulid->toBase58();
         $a[Caster::PREFIX_VIRTUAL.'toRfc4122'] = $ulid->toRfc4122();
 
-        if ($ulid instanceof TimeBasedUidInterface) {
+        // symfony/uid >= 5.3
+        if (method_exists($ulid, 'getDateTime')) {
             $a[Caster::PREFIX_VIRTUAL.'time'] = $ulid->getDateTime()->format('Y-m-d H:i:s.v \U\T\C');
         }
 

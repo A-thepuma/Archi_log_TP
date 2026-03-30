@@ -33,13 +33,13 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
         ];
     }
 
-    public function normalize(mixed $data, ?string $format = null, array $context = []): int|string
+    public function normalize(mixed $object, ?string $format = null, array $context = []): int|string
     {
-        if (!$data instanceof \BackedEnum) {
+        if (!$object instanceof \BackedEnum) {
             throw new InvalidArgumentException('The data must belong to a backed enumeration.');
         }
 
-        return $data->value;
+        return $object->value;
     }
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
@@ -56,24 +56,30 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
             throw new InvalidArgumentException('The data must belong to a backed enumeration.');
         }
 
-        $allowInvalidValues = $context[self::ALLOW_INVALID_VALUES] ?? false;
-
-        if (null === $data || (!\is_int($data) && !\is_string($data))) {
-            if ($allowInvalidValues && !isset($context['not_normalizable_value_exceptions'])) {
+        if ($context[self::ALLOW_INVALID_VALUES] ?? false) {
+            if (null === $data || (!\is_int($data) && !\is_string($data))) {
                 return null;
             }
 
+            try {
+                return $type::tryFrom($data);
+            } catch (\TypeError) {
+                return null;
+            }
+        }
+
+        if (!\is_int($data) && !\is_string($data)) {
             throw NotNormalizableValueException::createForUnexpectedDataType('The data is neither an integer nor a string, you should pass an integer or a string that can be parsed as an enumeration case of type '.$type.'.', $data, ['int', 'string'], $context['deserialization_path'] ?? null, true);
         }
 
         try {
             return $type::from($data);
-        } catch (\ValueError|\TypeError $e) {
-            if ($allowInvalidValues && !isset($context['not_normalizable_value_exceptions'])) {
-                return null;
+        } catch (\ValueError $e) {
+            if (isset($context['has_constructor'])) {
+                throw new InvalidArgumentException('The data must belong to a backed enumeration of type '.$type, 0, $e);
             }
 
-            throw NotNormalizableValueException::createForUnexpectedDataType('The data must belong to a backed enumeration of type '.$type, $data, ['int', 'string'], $context['deserialization_path'] ?? null, true, 0, $e);
+            throw NotNormalizableValueException::createForUnexpectedDataType('The data must belong to a backed enumeration of type '.$type, $data, [$type], $context['deserialization_path'] ?? null, true, 0, $e);
         }
     }
 

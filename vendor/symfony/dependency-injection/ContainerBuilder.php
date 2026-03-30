@@ -129,7 +129,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     private array $autoconfiguredInstanceof = [];
 
     /**
-     * @var array<string, callable[]>
+     * @var array<string, callable>
      */
     private array $autoconfiguredAttributes = [];
 
@@ -200,6 +200,10 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     public function registerExtension(ExtensionInterface $extension): void
     {
         $this->extensions[$extension->getAlias()] = $extension;
+
+        if (false !== $extension->getNamespace()) {
+            $this->extensionsByNs[$extension->getNamespace()] = $extension;
+        }
     }
 
     /**
@@ -269,58 +273,46 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         if ($resource instanceof DirectoryResource && $this->inVendors($resource->getResource())) {
             return $this;
         }
-        if (!$resource instanceof ClassExistenceResource) {
-            $this->resources[(string) $resource] = $resource;
+        if ($resource instanceof ClassExistenceResource) {
+            $class = $resource->getResource();
 
-            return $this;
-        }
-
-        $class = $resource->getResource();
-
-        if (!(new ClassExistenceResource($class, false))->isFresh(1)) {
-            if (!$this->inVendors((new \ReflectionClass($class))->getFileName())) {
-                $this->resources[$class] = $resource;
-            }
-
-            return $this;
-        }
-
-        $inVendor = true;
-        foreach (spl_autoload_functions() as $autoloader) {
-            if (!\is_array($autoloader)) {
-                $inVendor = false;
-                break;
-            }
-
-            if ($autoloader[0] instanceof DebugClassLoader) {
-                $autoloader = $autoloader[0]->getClassLoader();
-            }
-
-            if (!\is_array($autoloader) || !$autoloader[0] instanceof ClassLoader) {
-                $inVendor = false;
-                break;
-            }
-
-            foreach ($autoloader[0]->getPrefixesPsr4() as $prefix => $dirs) {
-                if (!str_starts_with($class, $prefix)) {
+            $inVendor = false;
+            foreach (spl_autoload_functions() as $autoloader) {
+                if (!\is_array($autoloader)) {
                     continue;
                 }
 
-                foreach ($dirs as $dir) {
-                    if (!$dir = realpath($dir)) {
+                if ($autoloader[0] instanceof DebugClassLoader) {
+                    $autoloader = $autoloader[0]->getClassLoader();
+                }
+
+                if (!\is_array($autoloader) || !$autoloader[0] instanceof ClassLoader || !$autoloader[0]->findFile(__CLASS__)) {
+                    continue;
+                }
+
+                foreach ($autoloader[0]->getPrefixesPsr4() as $prefix => $dirs) {
+                    if ('' === $prefix || !str_starts_with($class, $prefix)) {
                         continue;
                     }
 
-                    if (!$inVendor = $this->inVendors($dir)) {
-                        break 3;
+                    foreach ($dirs as $dir) {
+                        if (!$dir = realpath($dir)) {
+                            continue;
+                        }
+
+                        if (!$inVendor = $this->inVendors($dir)) {
+                            break 3;
+                        }
                     }
                 }
             }
+
+            if ($inVendor) {
+                return $this;
+            }
         }
 
-        if (!$inVendor) {
-            $this->resources[$class] = $resource;
-        }
+        $this->resources[(string) $resource] = $resource;
 
         return $this;
     }
@@ -356,10 +348,16 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             if (\is_object($object)) {
                 $object = $object::class;
             }
-            $class = $this->classReflectors[$object] ??= new \ReflectionClass($object);
+            if (!isset($this->classReflectors[$object])) {
+                $this->classReflectors[$object] = new \ReflectionClass($object);
+            }
+            $class = $this->classReflectors[$object];
 
             foreach ($class->getInterfaceNames() as $name) {
-                $file = ($this->classReflectors[$name] ??= new \ReflectionClass($name))->getFileName();
+                if (null === $interface = &$this->classReflectors[$name]) {
+                    $interface = new \ReflectionClass($name);
+                }
+                $file = $interface->getFileName();
                 if (false !== $file && file_exists($file)) {
                     $this->fileExists($file);
                 }
@@ -719,11 +717,12 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $this->autoconfiguredInstanceof[$interface] = $childDefinition;
         }
 
-        foreach ($container->getAttributeAutoconfigurators() as $attribute => $configurators) {
-            $this->autoconfiguredAttributes[$attribute] = array_merge(
-                $this->autoconfiguredAttributes[$attribute] ?? [],
-                $configurators)
-            ;
+        foreach ($container->getAutoconfiguredAttributes() as $attribute => $configurator) {
+            if (isset($this->autoconfiguredAttributes[$attribute])) {
+                throw new InvalidArgumentException(\sprintf('"%s" has already been autoconfigured and merge() does not support merging autoconfiguration for the same attribute.', $attribute));
+            }
+
+            $this->autoconfiguredAttributes[$attribute] = $configurator;
         }
     }
 
@@ -792,11 +791,10 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *  * The parameter bag is frozen;
      *  * Extension loading is disabled.
      *
-     * @param bool $resolveEnvPlaceholders Whether %env()% parameters should be resolved at build time using
-     *                                     the current env var values (true), or be resolved at runtime based
-     *                                     on the environment (false). In general, this should be set to "true"
-     *                                     when you want to use the current ContainerBuilder directly, and to
-     *                                     "false" when the container is dumped instead.
+     * @param bool $resolveEnvPlaceholders Whether %env()% parameters should be resolved using the current
+     *                                     env vars or be replaced by uniquely identifiable placeholders.
+     *                                     Set to "true" when you want to use the current ContainerBuilder
+     *                                     directly, keep to "false" when the container is dumped instead.
      */
     public function compile(bool $resolveEnvPlaceholders = false): void
     {
@@ -825,7 +823,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
 
         if ($bag instanceof EnvPlaceholderParameterBag) {
             if ($resolveEnvPlaceholders) {
-                $this->parameterBag = new ParameterBag($this->resolveEnvPlaceholders($this->escapeParameters($bag->all()), true));
+                $this->parameterBag = new ParameterBag($this->resolveEnvPlaceholders($bag->all(), true));
             }
 
             $this->envPlaceholders = $bag->getEnvPlaceholders();
@@ -837,7 +835,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             if ('.' === ($id[0] ?? '-')) {
                 continue;
             }
-            if ($definition->isPrivate()) {
+            if (!$definition->isPublic() || $definition->isPrivate()) {
                 $this->removedIds[$id] = true;
             }
         }
@@ -1111,15 +1109,14 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             }
 
             if (\is_array($callable) && (
-                'Closure' !== $class
-                || $callable[0] instanceof Reference
+                $callable[0] instanceof Reference
                 || $callable[0] instanceof Definition && !isset($inlineServices[spl_object_hash($callable[0])])
             )) {
                 $initializer = function () use ($callable, &$inlineServices) {
                     return $this->doResolveServices($callable[0], $inlineServices);
                 };
 
-                $proxy = eval('return '.LazyClosure::getCode('$initializer', $callable, $class, $this, $id).';');
+                $proxy = eval('return '.LazyClosure::getCode('$initializer', $callable, $definition, $this, $id).';');
                 $this->shareService($definition, $proxy, $id, $inlineServices);
 
                 return $proxy;
@@ -1174,14 +1171,14 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $service = $factory(...$arguments);
 
             if (!$definition->isDeprecated() && \is_array($factory) && \is_string($factory[0])) {
-                $r = $this->classReflectors[$factory[0]] ??= new \ReflectionClass($factory[0]);
+                $r = new \ReflectionClass($factory[0]);
 
-                if (str_contains($r->getDocComment() ?: '', "\n * @deprecated ")) {
+                if (0 < strpos($r->getDocComment(), "\n * @deprecated ")) {
                     trigger_deprecation('', '', 'The "%s" service relies on the deprecated "%s" factory class. It should either be deprecated or its factory upgraded.', $id, $r->name);
                 }
             }
         } else {
-            $r = $this->classReflectors[$class] ??= new \ReflectionClass($class);
+            $r = new \ReflectionClass($class);
 
             if (\is_object($tryProxy)) {
                 if ($r->getConstructor()) {
@@ -1193,7 +1190,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
                 $service = $r->getConstructor() ? $r->newInstanceArgs($arguments) : $r->newInstance();
             }
 
-            if (!$definition->isDeprecated() && str_contains($r->getDocComment() ?: '', "\n * @deprecated ")) {
+            if (!$definition->isDeprecated() && 0 < strpos($r->getDocComment(), "\n * @deprecated ")) {
                 trigger_deprecation('', '', 'The "%s" service relies on the deprecated "%s" class. It should either be deprecated or its implementation upgraded.', $id, $r->name);
             }
         }
@@ -1355,46 +1352,6 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
-     * Returns service ids for a given tag, asserting they have the "container.excluded" tag.
-     *
-     *  Example:
-     *
-     *      $container->register('foo')->addResourceTag('my.tag', ['hello' => 'world'])
-     *
-     *      $serviceIds = $container->findTaggedResourceIds('my.tag');
-     *      foreach ($serviceIds as $serviceId => $tags) {
-     *          foreach ($tags as $tag) {
-     *              echo $tag['hello'];
-     *          }
-     *      }
-     *
-     * @return array<string, array> An array of tags with the tagged service as key, holding a list of attribute arrays
-     */
-    public function findTaggedResourceIds(string $tagName, bool $throwOnAbstract = true): array
-    {
-        $this->usedTags[] = $tagName;
-        $tags = [];
-        foreach ($this->getDefinitions() as $id => $definition) {
-            if (!$definition->hasTag($tagName)) {
-                continue;
-            }
-            if (!$definition->hasTag('container.excluded')) {
-                throw new InvalidArgumentException(\sprintf('The resource "%s" tagged "%s" is missing the "container.excluded" tag.', $id, $tagName));
-            }
-            $class = $this->parameterBag->resolveValue($definition->getClass());
-            if (!$class || $throwOnAbstract && $definition->isAbstract()) {
-                throw new InvalidArgumentException(\sprintf('The resource "%s" tagged "%s" must have a class and not be abstract.', $id, $tagName));
-            }
-            if ($definition->getClass() !== $class) {
-                $definition->setClass($class);
-            }
-            $tags[$id] = $definition->getTag($tagName);
-        }
-
-        return $tags;
-    }
-
-    /**
      * Returns all tags the defined services use.
      *
      * @return string[]
@@ -1459,7 +1416,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function registerAttributeForAutoconfiguration(string $attributeClass, callable $configurator): void
     {
-        $this->autoconfiguredAttributes[$attributeClass][] = $configurator;
+        $this->autoconfiguredAttributes[$attributeClass] = $configurator;
     }
 
     /**
@@ -1470,10 +1427,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      * "$fooBar"-named arguments with $type as type-hint. Such arguments will
      * receive the service $id when autowiring is used.
      */
-    public function registerAliasForArgument(string $id, string $type, ?string $name = null, ?string $target = null): Alias
+    public function registerAliasForArgument(string $id, string $type, ?string $name = null): Alias
     {
         $parsedName = (new Target($name ??= $id))->getParsedName();
-        $target ??= $name;
 
         if (!preg_match('/^[a-zA-Z_\x7f-\xff]/', $parsedName)) {
             if ($id !== $name) {
@@ -1483,8 +1439,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             throw new InvalidArgumentException(\sprintf('Invalid argument name "%s"'.$id.': the first character must be a letter.', $name));
         }
 
-        if ($parsedName !== $target) {
-            $this->setAlias('.'.$type.' $'.$target, $type.' $'.$parsedName);
+        if ($parsedName !== $name) {
+            $this->setAlias('.'.$type.' $'.$name, $type.' $'.$parsedName);
         }
 
         return $this->setAlias($type.' $'.$parsedName, $id);
@@ -1501,9 +1457,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
-     * @return array<class-string, callable[]>
+     * @return array<string, callable>
      */
-    public function getAttributeAutoconfigurators(): array
+    public function getAutoconfiguredAttributes(): array
     {
         return $this->autoconfiguredAttributes;
     }
@@ -1818,19 +1774,5 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         }
 
         return $this->pathsInVendor[$path] = false;
-    }
-
-    private function escapeParameters(array $parameters): array
-    {
-        $params = [];
-        foreach ($parameters as $k => $v) {
-            $params[$k] = match (true) {
-                \is_array($v) => $this->escapeParameters($v),
-                \is_string($v) => str_replace('%', '%%', $v),
-                default => $v,
-            };
-        }
-
-        return $params;
     }
 }

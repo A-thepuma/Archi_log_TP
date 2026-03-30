@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Exception\UnexpectedPropertyException;
  *
  * @author Kévin Dunglas <kevin@dunglas.dev>
  */
-final class SnakeCaseToCamelCaseNameConverter implements NameConverterInterface
+final readonly class SnakeCaseToCamelCaseNameConverter implements NameConverterInterface
 {
     /**
      * Require all properties to be written in camelCase.
@@ -30,8 +30,8 @@ final class SnakeCaseToCamelCaseNameConverter implements NameConverterInterface
      * @param bool          $lowerCamelCase Use lowerCamelCase style
      */
     public function __construct(
-        private readonly ?array $attributes = null,
-        private readonly bool $lowerCamelCase = true,
+        private ?array $attributes = null,
+        private bool $lowerCamelCase = true,
     ) {
     }
 

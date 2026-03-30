@@ -13,14 +13,17 @@ namespace Symfony\Component\HttpKernel\DependencyInjection;
 
 use ProxyManager\Proxy\LazyLoadingInterface;
 use Symfony\Component\VarExporter\LazyObjectInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * Resets provided services.
  *
  * @author Alexander M. Turek <me@derrabus.de>
  * @author Nicolas Grekas <p@tchwork.com>
+ *
+ * @final since Symfony 7.2
  */
-final class ServicesResetter implements ServicesResetterInterface
+class ServicesResetter implements ResetInterface
 {
     /**
      * @param \Traversable<string, object>   $resettableServices
@@ -40,10 +43,6 @@ final class ServicesResetter implements ServicesResetterInterface
             }
 
             if ($service instanceof LazyLoadingInterface && !$service->isProxyInitialized()) {
-                continue;
-            }
-
-            if (new \ReflectionClass($service)->isUninitializedLazyObject($service)) {
                 continue;
             }
 

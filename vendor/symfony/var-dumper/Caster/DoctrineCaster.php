@@ -22,8 +22,6 @@ use Symfony\Component\VarDumper\Cloner\Stub;
  * @author Nicolas Grekas <p@tchwork.com>
  *
  * @final
- *
- * @internal
  */
 class DoctrineCaster
 {

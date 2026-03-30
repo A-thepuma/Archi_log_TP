@@ -19,8 +19,6 @@ use Symfony\Component\VarDumper\Cloner\Stub;
  * @author Grégoire Pineau <lyrixx@lyrixx.info>
  *
  * @final
- *
- * @internal
  */
 class AmqpCaster
 {

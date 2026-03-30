@@ -168,7 +168,7 @@ class AddLinesConfigurator extends AbstractConfigurator
     {
         $fileContents = $this->readFile($file);
 
-        if (str_contains($fileContents, $value)) {
+        if (false !== strpos($fileContents, $value)) {
             return $fileContents; // already includes value, skip
         }
 
@@ -185,7 +185,7 @@ class AddLinesConfigurator extends AbstractConfigurator
                 $lines = explode("\n", $fileContents);
                 $targetFound = false;
                 foreach ($lines as $key => $line) {
-                    if (str_contains($line, $target)) {
+                    if (false !== strpos($line, $target)) {
                         array_splice($lines, $key + 1, 0, $value);
                         $targetFound = true;
 
@@ -214,13 +214,13 @@ class AddLinesConfigurator extends AbstractConfigurator
     {
         $fileContents = $this->readFile($file);
 
-        if (!str_contains($fileContents, $value)) {
+        if (false === strpos($fileContents, $value)) {
             return $fileContents; // value already gone!
         }
 
-        if (str_contains($fileContents, "\n".$value)) {
+        if (false !== strpos($fileContents, "\n".$value)) {
             $value = "\n".$value;
-        } elseif (str_contains($fileContents, $value."\n")) {
+        } elseif (false !== strpos($fileContents, $value."\n")) {
             $value .= "\n";
         }
 
@@ -237,12 +237,8 @@ class AddLinesConfigurator extends AbstractConfigurator
 
         $installedRepo = $this->composer->getRepositoryManager()->getLocalRepository();
 
-        foreach ($packages as $package) {
-            $package = explode(':', $package, 2);
-            $packageName = $package[0];
-            $constraint = $package[1] ?? '*';
-
-            if (null === $installedRepo->findPackage($packageName, $constraint)) {
+        foreach ($packages as $packageName) {
+            if (null === $installedRepo->findPackage($packageName, '*')) {
                 return false;
             }
         }
@@ -253,7 +249,7 @@ class AddLinesConfigurator extends AbstractConfigurator
     private function relativize(string $path): string
     {
         $rootDir = $this->options->get('root-dir');
-        if (str_starts_with($path, $rootDir)) {
+        if (0 === strpos($path, $rootDir)) {
             $path = substr($path, \strlen($rootDir) + 1);
         }
 

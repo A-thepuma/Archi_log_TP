@@ -30,15 +30,15 @@ use Symfony\Component\TypeInfo\TypeContext\TypeContextFactory;
  *
  * @author Mathias Arlaud <mathias.arlaud@gmail.com>
  */
-final class PhpDocAwareReflectionTypeResolver implements TypeResolverInterface
+final readonly class PhpDocAwareReflectionTypeResolver implements TypeResolverInterface
 {
-    private readonly PhpDocParser $phpDocParser;
-    private readonly Lexer $lexer;
+    private PhpDocParser $phpDocParser;
+    private Lexer $lexer;
 
     public function __construct(
-        private readonly TypeResolverInterface $reflectionTypeResolver,
-        private readonly TypeResolverInterface $stringTypeResolver,
-        private readonly TypeContextFactory $typeContextFactory,
+        private TypeResolverInterface $reflectionTypeResolver,
+        private TypeResolverInterface $stringTypeResolver,
+        private TypeContextFactory $typeContextFactory,
         ?PhpDocParser $phpDocParser = null,
         ?Lexer $lexer = null,
     ) {

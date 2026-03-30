@@ -1,36 +1,6 @@
 CHANGELOG
 =========
 
-8.0
----
-
- * Constructing a `CollectionType` instance as a list that is not an array throws an `InvalidArgumentException`
- * Remove the third `$asList` argument of `TypeFactoryTrait::iterable()`, use `TypeFactoryTrait::list()` instead
-
-   ```diff
-    use Symfony\Component\TypeInfo\Type;
-
-   -$type = Type::iterable(Type::string(), asList: true);
-   +$type = Type::list(Type::string());
-   ```
-
-7.4
----
-
- * Add extra type alias support in `TypeContext` and `StringTypeResolver`
-
-7.3
----
-
- * Add `Type::accepts()` method
- * Add the `TypeFactoryTrait::fromValue()`, `TypeFactoryTrait::arrayShape()`, and `TypeFactoryTrait::arrayKey()` methods
- * Deprecate constructing a `CollectionType` instance as a list that is not an array
- * Deprecate the third `$asList` argument of `TypeFactoryTrait::iterable()`, use `TypeFactoryTrait::list()` instead
- * Add type alias support in `TypeContext` and `StringTypeResolver`
- * Add `CollectionType::mergeCollectionValueTypes()` method
- * Add `ArrayShapeType` to represent the exact shape of an array
- * Add `Type::traverse()` method
-
 7.2
 ---
 

@@ -159,11 +159,11 @@ class Application extends BaseApplication
         return parent::getLongVersion().\sprintf(' (env: <comment>%s</>, debug: <comment>%s</>)', $this->kernel->getEnvironment(), $this->kernel->isDebug() ? 'true' : 'false');
     }
 
-    public function addCommand(callable|Command $command): ?Command
+    public function add(Command $command): ?Command
     {
         $this->registerCommands();
 
-        return parent::addCommand($command);
+        return parent::add($command);
     }
 
     protected function registerCommands(): void
@@ -197,7 +197,7 @@ class Application extends BaseApplication
             foreach ($container->getParameter('console.command.ids') as $id) {
                 if (!isset($lazyCommandIds[$id])) {
                     try {
-                        $this->addCommand($container->get($id));
+                        $this->add($container->get($id));
                     } catch (\Throwable $e) {
                         $this->registrationErrors[] = $e;
                     }

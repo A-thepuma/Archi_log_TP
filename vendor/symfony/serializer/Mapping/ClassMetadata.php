@@ -13,21 +13,37 @@ namespace Symfony\Component\Serializer\Mapping;
 
 /**
  * @author Kévin Dunglas <dunglas@gmail.com>
- *
- * @final
  */
 class ClassMetadata implements ClassMetadataInterface
 {
-    private string $name;
+    /**
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
+     *           {@link getName()} instead.
+     */
+    public string $name;
 
     /**
      * @var AttributeMetadataInterface[]
+     *
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
+     *           {@link getAttributesMetadata()} instead.
      */
-    private array $attributesMetadata = [];
+    public array $attributesMetadata = [];
 
     private ?\ReflectionClass $reflClass = null;
-    private ?ClassDiscriminatorMapping $classDiscriminatorMapping = null;
 
+    /**
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
+     *           {@link getClassDiscriminatorMapping()} instead.
+     */
+    public ?ClassDiscriminatorMapping $classDiscriminatorMapping = null;
+
+    /**
+     * Constructs a metadata for the given class.
+     */
     public function __construct(string $class, ?ClassDiscriminatorMapping $classDiscriminatorMapping = null)
     {
         $this->name = $class;
@@ -75,12 +91,17 @@ class ClassMetadata implements ClassMetadataInterface
         $this->classDiscriminatorMapping = $mapping;
     }
 
-    public function __serialize(): array
+    /**
+     * Returns the names of the properties that should be serialized.
+     *
+     * @return string[]
+     */
+    public function __sleep(): array
     {
         return [
-            'name' => $this->name,
-            'attributesMetadata' => $this->attributesMetadata,
-            'classDiscriminatorMapping' => $this->classDiscriminatorMapping,
+            'name',
+            'attributesMetadata',
+            'classDiscriminatorMapping',
         ];
     }
 }

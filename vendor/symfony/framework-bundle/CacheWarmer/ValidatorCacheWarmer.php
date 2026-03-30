@@ -14,7 +14,6 @@ namespace Symfony\Bundle\FrameworkBundle\CacheWarmer;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Validator\Mapping\Factory\LazyLoadingMetadataFactory;
-use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Validator\Mapping\Loader\LoaderChain;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 use Symfony\Component\Validator\Mapping\Loader\XmlFileLoader;
@@ -22,11 +21,13 @@ use Symfony\Component\Validator\Mapping\Loader\YamlFileLoader;
 use Symfony\Component\Validator\ValidatorBuilder;
 
 /**
- * Warms up validator metadata.
+ * Warms up XML and YAML validator metadata.
  *
  * @author Titouan Galopin <galopintitouan@gmail.com>
+ *
+ * @final since Symfony 7.1
  */
-final class ValidatorCacheWarmer extends AbstractPhpFileCacheWarmer
+class ValidatorCacheWarmer extends AbstractPhpFileCacheWarmer
 {
     /**
      * @param string $phpArrayFile The PHP file where metadata are cached
@@ -40,10 +41,6 @@ final class ValidatorCacheWarmer extends AbstractPhpFileCacheWarmer
 
     protected function doWarmUp(string $cacheDir, ArrayAdapter $arrayAdapter, ?string $buildDir = null): bool
     {
-        if (!$buildDir) {
-            return false;
-        }
-
         $loaders = $this->validatorBuilder->getLoaders();
         $metadataFactory = new LazyLoadingMetadataFactory(new LoaderChain($loaders), $arrayAdapter);
 
@@ -76,14 +73,14 @@ final class ValidatorCacheWarmer extends AbstractPhpFileCacheWarmer
     /**
      * @param LoaderInterface[] $loaders
      *
-     * @return list<XmlFileLoader|YamlFileLoader|AttributeLoader>
+     * @return XmlFileLoader[]|YamlFileLoader[]
      */
     private function extractSupportedLoaders(array $loaders): array
     {
         $supportedLoaders = [];
 
         foreach ($loaders as $loader) {
-            if (method_exists($loader, 'getMappedClasses')) {
+            if ($loader instanceof XmlFileLoader || $loader instanceof YamlFileLoader) {
                 $supportedLoaders[] = $loader;
             } elseif ($loader instanceof LoaderChain) {
                 $supportedLoaders = array_merge($supportedLoaders, $this->extractSupportedLoaders($loader->getLoaders()));

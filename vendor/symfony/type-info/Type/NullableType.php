@@ -59,9 +59,4 @@ final class NullableType extends UnionType implements WrappingTypeInterface
     {
         return true;
     }
-
-    public function accepts(mixed $value): bool
-    {
-        return null === $value || parent::accepts($value);
-    }
 }

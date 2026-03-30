@@ -32,9 +32,18 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('twig');
         $rootNode = $treeBuilder->getRootNode();
 
-        $rootNode
-            ->docUrl('https://symfony.com/doc/{version:major}.{version:minor}/reference/configuration/twig.html', 'symfony/twig-bundle')
-        ;
+        $rootNode->beforeNormalization()
+            ->ifTrue(fn ($v) => \is_array($v) && \array_key_exists('exception_controller', $v))
+            ->then(function ($v) {
+                if (isset($v['exception_controller'])) {
+                    throw new InvalidConfigurationException('Option "exception_controller" under "twig" must be null or unset, use "error_controller" under "framework" instead.');
+                }
+
+                unset($v['exception_controller']);
+
+                return $v;
+            })
+        ->end();
 
         $this->addFormThemesSection($rootNode);
         $this->addGlobalsSection($rootNode);
@@ -48,8 +57,9 @@ class Configuration implements ConfigurationInterface
     private function addFormThemesSection(ArrayNodeDefinition $rootNode): void
     {
         $rootNode
+            ->fixXmlConfig('form_theme')
             ->children()
-                ->arrayNode('form_themes', 'form_theme')
+                ->arrayNode('form_themes')
                     ->addDefaultChildrenIfNoneSet()
                     ->prototype('scalar')->defaultValue('form_div_layout.html.twig')->end()
                     ->example(['@My/form.html.twig'])
@@ -65,8 +75,9 @@ class Configuration implements ConfigurationInterface
     private function addGlobalsSection(ArrayNodeDefinition $rootNode): void
     {
         $rootNode
+            ->fixXmlConfig('global')
             ->children()
-                ->arrayNode('globals', 'global')
+                ->arrayNode('globals')
                     ->normalizeKeys(false)
                     ->useAttributeAsKey('key')
                     ->example(['foo' => '@bar', 'pi' => 3.14])
@@ -114,10 +125,16 @@ class Configuration implements ConfigurationInterface
     private function addTwigOptions(ArrayNodeDefinition $rootNode): void
     {
         $rootNode
+            ->fixXmlConfig('path')
             ->children()
                 ->scalarNode('autoescape_service')->defaultNull()->end()
                 ->scalarNode('autoescape_service_method')->defaultNull()->end()
-                ->scalarNode('cache')->defaultTrue()->end()
+                ->scalarNode('base_template_class')
+                    ->setDeprecated('symfony/twig-bundle', '7.1')
+                    ->example('Twig\Template')
+                    ->cannotBeEmpty()
+                ->end()
+                ->scalarNode('cache')->defaultValue('%kernel.cache_dir%/twig')->end()
                 ->scalarNode('charset')->defaultValue('%kernel.charset%')->end()
                 ->booleanNode('debug')->defaultValue('%kernel.debug%')->end()
                 ->booleanNode('strict_variables')->defaultValue('%kernel.debug%')->end()
@@ -130,10 +147,13 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('file_name_pattern')
                     ->example('*.twig')
                     ->info('Pattern of file name used for cache warmer and linter.')
-                    ->acceptAndWrap(['string'])
+                    ->beforeNormalization()
+                        ->ifString()
+                            ->then(fn ($value) => [$value])
+                        ->end()
                     ->prototype('scalar')->end()
                 ->end()
-                ->arrayNode('paths', 'path')
+                ->arrayNode('paths')
                     ->normalizeKeys(false)
                     ->useAttributeAsKey('paths')
                     ->beforeNormalization()

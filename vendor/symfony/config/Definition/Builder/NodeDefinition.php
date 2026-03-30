@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\Config\Definition\Builder;
 
-use Composer\InstalledVersions;
 use Symfony\Component\Config\Definition\BaseNode;
 use Symfony\Component\Config\Definition\Exception\InvalidDefinitionException;
 use Symfony\Component\Config\Definition\NodeInterface;
@@ -19,43 +18,26 @@ use Symfony\Component\Config\Definition\NodeInterface;
 /**
  * This class provides a fluent interface for defining a node.
  *
- * @template-covariant TParent of NodeParentInterface|null = null
- *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 abstract class NodeDefinition implements NodeParentInterface
 {
     protected ?string $name = null;
-    /**
-     * @var NormalizationBuilder<$this>
-     */
     protected NormalizationBuilder $normalization;
-    /**
-     * @var ValidationBuilder<$this>
-     */
     protected ValidationBuilder $validation;
     protected mixed $defaultValue;
     protected bool $default = false;
     protected bool $required = false;
     protected array $deprecation = [];
-    /**
-     * @var MergeBuilder<$this>
-     */
     protected MergeBuilder $merge;
     protected bool $allowEmptyValue = true;
     protected mixed $nullEquivalent = null;
     protected mixed $trueEquivalent = true;
     protected mixed $falseEquivalent = false;
     protected string $pathSeparator = BaseNode::DEFAULT_PATH_SEPARATOR;
-    /**
-     * @var TParent|NodeInterface
-     */
     protected NodeParentInterface|NodeInterface|null $parent;
     protected array $attributes = [];
 
-    /**
-     * @param TParent $parent
-     */
     public function __construct(?string $name, ?NodeParentInterface $parent = null)
     {
         $this->parent = $parent;
@@ -64,10 +46,6 @@ abstract class NodeDefinition implements NodeParentInterface
 
     /**
      * Sets the parent node.
-     *
-     * @template TNewParent of NodeParentInterface
-     *
-     * @psalm-this-out static<TNewParent>
      *
      * @return $this
      */
@@ -99,26 +77,6 @@ abstract class NodeDefinition implements NodeParentInterface
     }
 
     /**
-     * Sets the documentation URI, as usually put in the "@see" tag of a doc block. This
-     * can either be a URL or a file path. You can use the placeholders {package},
-     * {version:major} and {version:minor} in the URI.
-     *
-     * @return $this
-     */
-    public function docUrl(string $uri, ?string $package = null): static
-    {
-        if ($package) {
-            preg_match('/^(\d+)\.(\d+)\.(\d+)/', InstalledVersions::getVersion($package) ?? '', $m);
-        }
-
-        return $this->attribute('docUrl', strtr($uri, [
-            '{package}' => $package ?? '',
-            '{version:major}' => $m[1] ?? '',
-            '{version:minor}' => $m[2] ?? '',
-        ]));
-    }
-
-    /**
      * Sets an attribute on the node.
      *
      * @return $this
@@ -133,9 +91,9 @@ abstract class NodeDefinition implements NodeParentInterface
     /**
      * Returns the parent node.
      *
-     * @return TParent
+     * @return NodeParentInterface|NodeBuilder|self|ArrayNodeDefinition|VariableNodeDefinition
      */
-    public function end(): ?NodeParentInterface
+    public function end(): NodeParentInterface
     {
         return $this->parent;
     }
@@ -178,10 +136,6 @@ abstract class NodeDefinition implements NodeParentInterface
      */
     public function defaultValue(mixed $value): static
     {
-        if ($this->required) {
-            throw new InvalidDefinitionException(\sprintf('The node "%s" cannot be required and have a default value.', $this->name));
-        }
-
         $this->default = true;
         $this->defaultValue = $value;
 
@@ -195,10 +149,6 @@ abstract class NodeDefinition implements NodeParentInterface
      */
     public function isRequired(): static
     {
-        if ($this->default) {
-            throw new InvalidDefinitionException(\sprintf('The node "%s" cannot be required and have a default value.', $this->name));
-        }
-
         $this->required = true;
 
         return $this;
@@ -295,8 +245,6 @@ abstract class NodeDefinition implements NodeParentInterface
 
     /**
      * Sets an expression to run before the normalization.
-     *
-     * @return ExprBuilder<$this>
      */
     public function beforeNormalization(): ExprBuilder
     {
@@ -321,8 +269,6 @@ abstract class NodeDefinition implements NodeParentInterface
      * The expression receives the value of the node and must return it. It can
      * modify it.
      * An exception should be thrown when the node is not valid.
-     *
-     * @return ExprBuilder<$this>
      */
     public function validate(): ExprBuilder
     {
@@ -343,8 +289,6 @@ abstract class NodeDefinition implements NodeParentInterface
 
     /**
      * Gets the builder for validation rules.
-     *
-     * @return ValidationBuilder<$this>
      */
     protected function validation(): ValidationBuilder
     {
@@ -353,8 +297,6 @@ abstract class NodeDefinition implements NodeParentInterface
 
     /**
      * Gets the builder for merging rules.
-     *
-     * @return MergeBuilder<$this>
      */
     protected function merge(): MergeBuilder
     {
@@ -363,8 +305,6 @@ abstract class NodeDefinition implements NodeParentInterface
 
     /**
      * Gets the builder for normalization rules.
-     *
-     * @return NormalizationBuilder<$this>
      */
     protected function normalization(): NormalizationBuilder
     {

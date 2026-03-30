@@ -51,7 +51,7 @@ class UpdateRecipesCommand extends BaseCommand
         parent::__construct();
     }
 
-    protected function configure(): void
+    protected function configure()
     {
         $this->setName('symfony:recipes:update')
             ->setAliases(['recipes:update'])
@@ -153,11 +153,11 @@ class UpdateRecipesCommand extends BaseCommand
         $recipeUpdate = new RecipeUpdate($originalRecipe, $newRecipe, $symfonyLock, $this->rootDir);
         $this->configurator->populateUpdate($recipeUpdate);
         $originalComposerJsonHash = $this->flex->getComposerJsonHash();
-        $patcher = new RecipePatcher($this->rootDir, $io, $symfonyLock);
+        $patcher = new RecipePatcher($this->rootDir, $io);
 
         try {
             $patch = $patcher->generatePatch($recipeUpdate->getOriginalFiles(), $recipeUpdate->getNewFiles());
-            $hasConflicts = !$patcher->applyPatch($patch, $packageName);
+            $hasConflicts = !$patcher->applyPatch($patch);
         } catch (\Throwable $throwable) {
             $io->writeError([
                 '<bg=red;fg=white>There was an error applying the recipe update patch</>',

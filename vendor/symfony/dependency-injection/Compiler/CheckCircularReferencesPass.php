@@ -62,7 +62,7 @@ class CheckCircularReferencesPass implements CompilerPassInterface
                 continue;
             }
 
-            $isLeaf = (bool) $node->getValue();
+            $isLeaf = !!$node->getValue();
             $isConcrete = !$edge->isLazy() && !$edge->isWeak();
 
             // Skip already checked lazy services if they are still lazy. Will not gain any new information.

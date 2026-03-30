@@ -13,13 +13,12 @@ namespace Symfony\Bridge\Monolog\Processor;
 
 use Monolog\Level;
 use Monolog\LogRecord;
-use Monolog\ResettableInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
-class DebugProcessor implements DebugLoggerInterface, ResetInterface, ResettableInterface
+class DebugProcessor implements DebugLoggerInterface, ResetInterface
 {
     private array $records = [];
     private array $errorCount = [];

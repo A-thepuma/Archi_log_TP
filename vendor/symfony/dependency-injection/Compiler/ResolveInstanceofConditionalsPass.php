@@ -149,11 +149,6 @@ class ResolveInstanceofConditionalsPass implements CompilerPassInterface
                 ->setAbstract(true);
         }
 
-        if ($definition->isSynthetic()) {
-            // Ignore container.excluded tag on synthetic services
-            $definition->clearTag('container.excluded');
-        }
-
         return $definition;
     }
 

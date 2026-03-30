@@ -96,9 +96,6 @@ class DebugCommand extends Command
     {
         $data = [];
 
-        $mapping = $classMetadata->getClassDiscriminatorMapping();
-        $typeProperty = $mapping?->getTypeProperty();
-
         foreach ($classMetadata->getAttributesMetadata() as $attributeMetadata) {
             $data[$attributeMetadata->getName()] = [
                 'groups' => $attributeMetadata->getGroups(),
@@ -109,10 +106,6 @@ class DebugCommand extends Command
                 'normalizationContexts' => $attributeMetadata->getNormalizationContexts(),
                 'denormalizationContexts' => $attributeMetadata->getDenormalizationContexts(),
             ];
-
-            if ($mapping && $typeProperty === $attributeMetadata->getName()) {
-                $data[$attributeMetadata->getName()]['discriminatorMap'] = $mapping->getTypesMapping();
-            }
         }
 
         return $data;

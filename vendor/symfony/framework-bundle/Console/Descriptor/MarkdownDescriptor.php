@@ -155,6 +155,7 @@ class MarkdownDescriptor extends Descriptor
         $serviceIds = isset($options['tag']) && $options['tag']
             ? $this->sortTaggedServicesByPriority($container->findTaggedServiceIds($options['tag']))
             : $this->sortServiceIds($container->getServiceIds());
+        $showArguments = isset($options['show_arguments']) && $options['show_arguments'];
         $services = ['definitions' => [], 'aliases' => [], 'services' => []];
 
         if (isset($options['filter'])) {
@@ -184,7 +185,7 @@ class MarkdownDescriptor extends Descriptor
             $this->write("\n\nDefinitions\n-----------\n");
             foreach ($services['definitions'] as $id => $service) {
                 $this->write("\n");
-                $this->describeContainerDefinition($service, ['id' => $id], $container);
+                $this->describeContainerDefinition($service, ['id' => $id, 'show_arguments' => $showArguments], $container);
             }
         }
 
@@ -214,7 +215,7 @@ class MarkdownDescriptor extends Descriptor
         }
 
         $output .= '- Class: `'.$definition->getClass().'`'
-            ."\n".'- Public: '.($definition->isPublic() ? 'yes' : 'no')
+            ."\n".'- Public: '.($definition->isPublic() && !$definition->isPrivate() ? 'yes' : 'no')
             ."\n".'- Synthetic: '.($definition->isSynthetic() ? 'yes' : 'no')
             ."\n".'- Lazy: '.($definition->isLazy() ? 'yes' : 'no')
             ."\n".'- Shared: '.($definition->isShared() ? 'yes' : 'no')
@@ -230,7 +231,9 @@ class MarkdownDescriptor extends Descriptor
             $output .= "\n".'- Deprecated: no';
         }
 
-        $output .= "\n".'- Arguments: '.($definition->getArguments() ? 'yes' : 'no');
+        if (isset($options['show_arguments']) && $options['show_arguments']) {
+            $output .= "\n".'- Arguments: '.($definition->getArguments() ? 'yes' : 'no');
+        }
 
         if ($definition->getFile()) {
             $output .= "\n".'- File: `'.$definition->getFile().'`';
@@ -276,7 +279,7 @@ class MarkdownDescriptor extends Descriptor
     protected function describeContainerAlias(Alias $alias, array $options = [], ?ContainerBuilder $container = null): void
     {
         $output = '- Service: `'.$alias.'`'
-            ."\n".'- Public: '.($alias->isPublic() ? 'yes' : 'no');
+            ."\n".'- Public: '.($alias->isPublic() && !$alias->isPrivate() ? 'yes' : 'no');
 
         if (!isset($options['id'])) {
             $this->write($output);

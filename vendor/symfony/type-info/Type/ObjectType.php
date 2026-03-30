@@ -66,11 +66,6 @@ class ObjectType extends Type
         return false;
     }
 
-    public function accepts(mixed $value): bool
-    {
-        return $value instanceof $this->className;
-    }
-
     public function __toString(): string
     {
         return $this->className;

@@ -22,7 +22,7 @@ class Groups
     /**
      * @var string[]
      */
-    public readonly array $groups;
+    private readonly array $groups;
 
     /**
      * @param string|string[] $groups The groups to define on the attribute target
@@ -41,4 +41,16 @@ class Groups
             }
         }
     }
+
+    /**
+     * @return string[]
+     */
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+}
+
+if (!class_exists(\Symfony\Component\Serializer\Annotation\Groups::class, false)) {
+    class_alias(Groups::class, \Symfony\Component\Serializer\Annotation\Groups::class);
 }
