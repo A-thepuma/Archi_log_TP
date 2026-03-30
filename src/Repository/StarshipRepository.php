@@ -7,36 +7,47 @@ use Psr\Log\LoggerInterface;
 
 class StarshipRepository
 {
-
-    public function __construct(private LoggerInterface $logger){
-
+    public function __construct(private LoggerInterface $logger)
+    {
     }
-    public function findAll() : array {
 
-        $this ->logger->info("Collection des vaisseux spatiaux récupérées");
+    public function findAll(): array
+    {
+        $this->logger->info('Collection de vaisseaux récupérée');
+
         return [
             new Starship(
                 1,
-                'USS LeafyCruiser (NCC-0001)',
-                'Garden',
-                'Jean-Luc Pickles',
-                'taken over by Q',
+                'Millennium Falcon',
+                'Light Freighter',
+                'Han Solo',
+                'Operational',
             ),
             new Starship(
                 2,
-                'USS WanderLust (WCC-0002)',
-                'Latte',
-                'Jean-Luc snake',
-                ' over by Q',
+                'Executor',
+                'Super Star Destroyer',
+                'Darth Vader',
+                'Destroyed',
             ),
-
             new Starship(
                 3,
-                'USS Expresso (WCC-0002)',
-                'aa',
-                'Jean-Luc canica',
-                '  by Q',
+                'Ghost',
+                'Modified VCX-100',
+                'Hera Syndulla',
+                'Operational',
             ),
         ];
+    }
+
+    public function find(int $id): ?Starship
+    {
+        foreach ($this->findAll() as $starship) {
+            if ($starship->getId() === $id) {
+                return $starship;
+            }
+        }
+
+        return null;
     }
 }

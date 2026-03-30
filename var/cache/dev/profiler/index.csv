@@ -1,0 +1,4 @@
+b96ddc,127.0.0.1,GET,http://127.0.0.1:8000/api/starships/wharf,1774882198,bf4995,500,request
+bf4995,127.0.0.1,GET,http://127.0.0.1:8000/api/starships/wharf,1774882198,,500,request
+14fcc1,127.0.0.1,GET,http://127.0.0.1:8000/api/starships/2,1774882202,0ea5dc,500,request
+0ea5dc,127.0.0.1,GET,http://127.0.0.1:8000/api/starships/2,1774882202,,500,request
