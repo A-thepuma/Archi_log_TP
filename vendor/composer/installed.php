@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'b978b0f81c65dbf38cacde0be1864ad9d02d5a0f',
+        'reference' => '7547d74fe6a3d9b04fd8c18170a6772a129de110',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,9 +13,18 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'b978b0f81c65dbf38cacde0be1864ad9d02d5a0f',
+            'reference' => '7547d74fe6a3d9b04fd8c18170a6772a129de110',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'composer/semver' => array(
+            'pretty_version' => '3.4.4',
+            'version' => '3.4.4.0',
+            'reference' => '198166618906cb2de69b95d7d47e5fa8aa1b2b95',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/./semver',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
@@ -51,6 +60,18 @@
             'install_path' => __DIR__ . '/../php-cs-fixer/shim',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'php-http/async-client-implementation' => array(
+            'dev_requirement' => false,
+            'provided' => array(
+                0 => '*',
+            ),
+        ),
+        'php-http/client-implementation' => array(
+            'dev_requirement' => false,
+            'provided' => array(
+                0 => '*',
+            ),
         ),
         'phpdocumentor/reflection-common' => array(
             'pretty_version' => '2.2.0',
@@ -133,6 +154,12 @@
                 0 => '1.0',
             ),
         ),
+        'psr/http-client-implementation' => array(
+            'dev_requirement' => false,
+            'provided' => array(
+                0 => '1.0',
+            ),
+        ),
         'psr/log' => array(
             'pretty_version' => '3.0.2',
             'version' => '3.0.2.0',
@@ -154,6 +181,24 @@
             'provided' => array(
                 0 => '1.0|2.0|3.0',
             ),
+        ),
+        'symfony/asset' => array(
+            'pretty_version' => 'v7.2.0',
+            'version' => '7.2.0.0',
+            'reference' => 'cb926cd59fefa1f9b4900b3695f0f846797ba5c0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/asset',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'symfony/asset-mapper' => array(
+            'pretty_version' => 'v7.2.9',
+            'version' => '7.2.9.0',
+            'reference' => '037b6c86d99357785c7b377773f23589509f8315',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/asset-mapper',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'symfony/cache' => array(
             'pretty_version' => 'v7.2.5',
@@ -301,6 +346,30 @@
             'install_path' => __DIR__ . '/../symfony/framework-bundle',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'symfony/http-client' => array(
+            'pretty_version' => 'v7.2.9',
+            'version' => '7.2.9.0',
+            'reference' => 'e26182d286135dad99f58ad57c56eef41362d452',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/http-client',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'symfony/http-client-contracts' => array(
+            'pretty_version' => 'v3.6.0',
+            'version' => '3.6.0.0',
+            'reference' => '75d7043853a42837e68111812f4d964b01e5101c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/http-client-contracts',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'symfony/http-client-implementation' => array(
+            'dev_requirement' => false,
+            'provided' => array(
+                0 => '3.0',
+            ),
         ),
         'symfony/http-foundation' => array(
             'pretty_version' => 'v7.2.5',
@@ -481,6 +550,15 @@
             'provided' => array(
                 0 => '1.1|2.0|3.0',
             ),
+        ),
+        'symfony/stimulus-bundle' => array(
+            'pretty_version' => 'v2.34.0',
+            'version' => '2.34.0.0',
+            'reference' => 'd610a2e021cf63f955838b4bfe40da7e4cafe850',
+            'type' => 'symfony-bundle',
+            'install_path' => __DIR__ . '/../symfony/stimulus-bundle',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'symfony/stopwatch' => array(
             'pretty_version' => 'v7.2.4',

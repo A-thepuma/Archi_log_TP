@@ -36,6 +36,7 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         ),
         'S' =>
         array (
+            'Symfony\\UX\\StimulusBundle\\' => 26,
             'Symfony\\Runtime\\Symfony\\Component\\' => 34,
             'Symfony\\Polyfill\\Php83\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
@@ -44,6 +45,7 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
             'Symfony\\Flex\\' => 13,
             'Symfony\\Contracts\\Translation\\' => 30,
             'Symfony\\Contracts\\Service\\' => 26,
+            'Symfony\\Contracts\\HttpClient\\' => 29,
             'Symfony\\Contracts\\EventDispatcher\\' => 34,
             'Symfony\\Contracts\\Cache\\' => 24,
             'Symfony\\Component\\Yaml\\' => 23,
@@ -59,6 +61,7 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
             'Symfony\\Component\\PropertyAccess\\' => 33,
             'Symfony\\Component\\HttpKernel\\' => 29,
             'Symfony\\Component\\HttpFoundation\\' => 33,
+            'Symfony\\Component\\HttpClient\\' => 29,
             'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\Filesystem\\' => 29,
             'Symfony\\Component\\EventDispatcher\\' => 34,
@@ -68,6 +71,8 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
             'Symfony\\Component\\Console\\' => 26,
             'Symfony\\Component\\Config\\' => 25,
             'Symfony\\Component\\Cache\\' => 24,
+            'Symfony\\Component\\Asset\\' => 24,
+            'Symfony\\Component\\AssetMapper\\' => 30,
             'Symfony\\Bundle\\WebProfilerBundle\\' => 33,
             'Symfony\\Bundle\\TwigBundle\\' => 26,
             'Symfony\\Bundle\\MonologBundle\\' => 29,
@@ -91,6 +96,10 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'D' =>
         array (
             'Doctrine\\Deprecations\\' => 22,
+        ),
+        'C' =>
+        array (
+            'Composer\\Semver\\' => 16,
         ),
         'A' =>
         array (
@@ -117,6 +126,10 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'Twig\\' =>
         array (
             0 => __DIR__ . '/..' . '/twig/twig/src',
+        ),
+        'Symfony\\UX\\StimulusBundle\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/stimulus-bundle/src',
         ),
         'Symfony\\Runtime\\Symfony\\Component\\' =>
         array (
@@ -149,6 +162,10 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'Symfony\\Contracts\\Service\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/service-contracts',
+        ),
+        'Symfony\\Contracts\\HttpClient\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/http-client-contracts',
         ),
         'Symfony\\Contracts\\EventDispatcher\\' =>
         array (
@@ -210,6 +227,10 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         array (
             0 => __DIR__ . '/..' . '/symfony/http-foundation',
         ),
+        'Symfony\\Component\\HttpClient\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/http-client',
+        ),
         'Symfony\\Component\\Finder\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/finder',
@@ -245,6 +266,14 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'Symfony\\Component\\Cache\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/cache',
+        ),
+        'Symfony\\Component\\Asset\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/asset',
+        ),
+        'Symfony\\Component\\AssetMapper\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/asset-mapper',
         ),
         'Symfony\\Bundle\\WebProfilerBundle\\' =>
         array (
@@ -301,6 +330,10 @@ class ComposerStaticInit7246353e5bb23c8719402c051dcd5671
         'Doctrine\\Deprecations\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/deprecations/src',
+        ),
+        'Composer\\Semver\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/composer/semver/src',
         ),
         'App\\Tests\\' =>
         array (
